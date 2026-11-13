@@ -33,7 +33,8 @@ jobs:
           if [ -f firebase_applet_config.xml ]; then mv firebase_applet_config.xml app/src/main/res/values/; fi
           mv backup_rules.xml data_extraction_rules.xml file_paths.xml app/src/main/res/xml/
           mv *.ttf app/src/main/res/font/
-                    mv ensis_vi_icon_1794560122577.jpg app/src/main/res/drawable/
+          mv ic_launcher_background.xml ic_launcher_foreground.xml app/src/main/res/drawable/
+          mv ensis_vi_icon_1794560122577.jpg app/src/main/res/drawable/
           mv ic_launcher.xml ic_launcher_round.xml app/src/main/res/mipmap-anydpi-v26/
           rm -f Example*Test.kt StudioRepositoryRuleTest.kt FirestoreEmulatorTestBase.kt
           mv *.kt app/src/main/java/
