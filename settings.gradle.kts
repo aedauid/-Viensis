@@ -13,3 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "DAUDIO BY ENSIS"
+include(":app")
