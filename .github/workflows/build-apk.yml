@@ -35,13 +35,9 @@ jobs:
           mv ic_launcher_background.xml ic_launcher_foreground.xml app/src/main/res/drawable/
           mv ic_launcher.xml ic_launcher_round.xml app/src/main/res/mipmap-anydpi-v26/
           rm -f Example*Test.kt StudioRepositoryRuleTest.kt FirestoreEmulatorTestBase.kt
-          echo "// root build file" > build.gradle.kts        
-          cat > build.gradle.kts <<'EOF'
-          plugins {
-              alias(libs.plugins.android.application) apply false
-              alias(libs.plugins.kotlin.android) apply false
-          }
-          EOF
+          mv *.kt app/src/main/java/
+          mv build.gradle.kts app/build.gradle.kts
+          echo "// root build file" > build.gradle.kts
           grep -q 'include(":app")' settings.gradle.kts || echo 'include(":app")' >> settings.gradle.kts
 
       - name: Build Debug APK
