@@ -30,6 +30,8 @@ jobs:
           mv AndroidManifest.xml app/src/main/
           mv proguard-rules.pro app/
           mv colors.xml strings.xml themes.xml app/src/main/res/values/
+          mv firebase_applet_config.xml app/src/main/res/values/
+          mv firebase_applet_config.xml app/src/main/res/values/
           mv backup_rules.xml data_extraction_rules.xml file_paths.xml app/src/main/res/xml/
           mv *.ttf app/src/main/res/font/
           mv ic_launcher_background.xml ic_launcher_foreground.xml app/src/main/res/drawable/
