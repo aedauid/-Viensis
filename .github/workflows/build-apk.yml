@@ -30,8 +30,7 @@ jobs:
           mv AndroidManifest.xml app/src/main/
           mv proguard-rules.pro app/
           mv colors.xml strings.xml themes.xml app/src/main/res/values/
-          mv firebase_applet_config.xml app/src/main/res/values/
-                    if [ -f firebase_applet_config.xml ]; then mv firebase_applet_config.xml app/src/main/res/values/; fi
+          if [ -f firebase_applet_config.xml ]; then mv firebase_applet_config.xml app/src/main/res/values/; fi
           mv backup_rules.xml data_extraction_rules.xml file_paths.xml app/src/main/res/xml/
           mv *.ttf app/src/main/res/font/
           mv ic_launcher_background.xml ic_launcher_foreground.xml app/src/main/res/drawable/
@@ -41,6 +40,16 @@ jobs:
           mv build.gradle.kts app/build.gradle.kts
           echo "// root build file" > build.gradle.kts
           grep -q 'include(":app")' settings.gradle.kts || echo 'include(":app")' >> settings.gradle.kts
+
+      - name: Create missing pieces
+        run: |
+          keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          if ! grep -rqs 'name="default_web_client_id"' app/src/main/res; then
+            echo '<resources><string name="default_web_client_id">placeholder</string></resources>' > app/src/main/res/values/ph_web_client.xml
+          fi
+          if ! grep -rqs 'name="firestore_database_id"' app/src/main/res; then
+            echo '<resources><string name="firestore_database_id">(default)</string></resources>' > app/src/main/res/values/ph_firestore.xml
+          fi
 
       - name: Build Debug APK
         run: gradle assembleDebug
