@@ -1,0 +1,6 @@
+{
+  "name": "daudio by Ensis",
+  "description": "daudio by Ensis (Ensis Vi. Dauid) — a songwriter's blueprint studio with music player, lyrics, notepad, drawing pad, voice recorder, and social sharing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

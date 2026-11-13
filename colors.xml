@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cream_paper">#FFF4F1EA</color>
+    <color name="blueprint_navy">#FF14213D</color>
+    <color name="drafting_gold">#FFC9A227</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,209 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidUserSettings(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.darkTheme is bool &&
+             data.defaultShareFormat in ['STORY_9_16', 'SQUARE_1_1', 'POST_4_5'] &&
+             data.autosaveEnabled is bool &&
+             data.hapticsEnabled is bool &&
+             data.reducedMotion is bool &&
+             data.autoScrollLyrics is bool &&
+             data.onboardingCompleted is bool &&
+             data.audioQuality in ['STANDARD', 'HIGH'];
+    }
+
+    function isValidTrack(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+             data.artist is string && data.artist.size() <= 140 &&
+             data.album is string && data.album.size() <= 140 &&
+             data.tags is list && data.tags.size() <= 10 &&
+             (data.tags.size() == 0 || data.tags[0] is string) &&
+             data.lyrics is string && data.lyrics.size() <= 20000 &&
+             data.durationMs is int && data.durationMs >= 0 && data.durationMs <= 36000000 &&
+             data.orderIndex is int && data.orderIndex >= 0 && data.orderIndex <= 10000 &&
+             data.isDemo is bool &&
+             data.demoKey is string && data.demoKey.size() <= 64 &&
+             data.mimeType is string && data.mimeType.size() <= 64 &&
+             data.chunkCount is int && data.chunkCount >= 0 && data.chunkCount <= 60;
+    }
+
+    function isValidNotepadSheet(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.type in ['note', 'drawing', 'recording'] &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+             data.content is string && data.content.size() <= 20000 &&
+             data.imageBase64 is string && data.imageBase64.size() <= 750000 &&
+             data.durationMs is int && data.durationMs >= 0 && data.durationMs <= 36000000 &&
+             data.mimeType is string && data.mimeType.size() <= 64 &&
+             data.chunkCount is int && data.chunkCount >= 0 && data.chunkCount <= 60 &&
+             data.trackId is string && data.trackId.size() <= 128;
+    }
+
+    function isValidMediaChunk(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             isValidId(data.parentId) &&
+             data.parentType in ['track', 'recording'] &&
+             data.chunkIndex is int && data.chunkIndex >= 0 && data.chunkIndex <= 60 &&
+             data.totalChunks is int && data.totalChunks >= 1 && data.totalChunks <= 60 &&
+             data.mimeType is string && data.mimeType.size() <= 64 &&
+             data.dataBase64 is string && data.dataBase64.size() >= 1 && data.dataBase64.size() <= 750000;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'displayName', 'darkTheme', 'defaultShareFormat',
+                         'autosaveEnabled', 'hapticsEnabled', 'reducedMotion', 'autoScrollLyrics',
+                         'onboardingCompleted', 'audioQuality', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'displayName', 'darkTheme', 'defaultShareFormat',
+                         'autosaveEnabled', 'hapticsEnabled', 'reducedMotion', 'autoScrollLyrics',
+                         'onboardingCompleted', 'audioQuality', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidUserSettings(incoming());
+
+      allow update: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(userId) &&
+                       isValidUserSettings(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'darkTheme', 'defaultShareFormat',
+                         'autosaveEnabled', 'hapticsEnabled', 'reducedMotion', 'autoScrollLyrics',
+                         'onboardingCompleted', 'audioQuality', 'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+
+      match /tracks/{trackId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(trackId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(trackId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'artist', 'album', 'tags', 'lyrics',
+                           'durationMs', 'orderIndex', 'isDemo', 'demoKey', 'mimeType', 'chunkCount',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'artist', 'album', 'tags', 'lyrics',
+                           'durationMs', 'orderIndex', 'isDemo', 'demoKey', 'mimeType', 'chunkCount',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidTrack(incoming());
+
+        allow update: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(trackId) &&
+                         isValidTrack(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'title', 'artist', 'album', 'tags', 'lyrics',
+                           'durationMs', 'orderIndex', 'mimeType', 'chunkCount', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(trackId);
+      }
+
+      match /sheets/{sheetId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(sheetId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(sheetId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'type', 'title', 'content', 'imageBase64',
+                           'durationMs', 'mimeType', 'chunkCount', 'trackId',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'type', 'title', 'content', 'imageBase64',
+                           'durationMs', 'mimeType', 'chunkCount', 'trackId',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidNotepadSheet(incoming());
+
+        allow update: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(sheetId) &&
+                         isValidNotepadSheet(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().type == existing().type &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'title', 'content', 'imageBase64', 'durationMs',
+                           'mimeType', 'chunkCount', 'trackId', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(sheetId);
+      }
+
+      match /mediaChunks/{chunkId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(chunkId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(chunkId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'parentId', 'parentType', 'chunkIndex',
+                           'totalChunks', 'mimeType', 'dataBase64', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'parentId', 'parentType', 'chunkIndex',
+                           'totalChunks', 'mimeType', 'dataBase64', 'createdAt'
+                         ]) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         isValidMediaChunk(incoming());
+
+        allow update: if false;
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(chunkId);
+      }
+    }
+  }
+}

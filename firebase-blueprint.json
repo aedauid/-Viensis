@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "Studio preferences and onboarding status for an authenticated songwriter.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the owner." },
+        "displayName": { "type": "string", "description": "Artist or songwriter display name." },
+        "darkTheme": { "type": "boolean", "description": "Whether night blueprint mode is enabled." },
+        "defaultShareFormat": { "type": "string", "enum": ["STORY_9_16", "SQUARE_1_1", "POST_4_5"] },
+        "autosaveEnabled": { "type": "boolean" },
+        "hapticsEnabled": { "type": "boolean" },
+        "reducedMotion": { "type": "boolean" },
+        "autoScrollLyrics": { "type": "boolean" },
+        "onboardingCompleted": { "type": "boolean" },
+        "audioQuality": { "type": "string", "enum": ["STANDARD", "HIGH"] },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update." }
+      },
+      "required": [
+        "userId", "displayName", "darkTheme", "defaultShareFormat",
+        "autosaveEnabled", "hapticsEnabled", "reducedMotion", "autoScrollLyrics",
+        "onboardingCompleted", "audioQuality", "createdAt", "updatedAt"
+      ]
+    },
+    "Track": {
+      "title": "Track",
+      "description": "Songwriting track with metadata, lyrics, playlist order, and optional cloud audio chunk count.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "artist": { "type": "string" },
+        "album": { "type": "string" },
+        "tags": { "type": "array", "description": "Up to 10 short genre/mood tags." },
+        "lyrics": { "type": "string" },
+        "durationMs": { "type": "integer" },
+        "orderIndex": { "type": "integer" },
+        "isDemo": { "type": "boolean" },
+        "demoKey": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "chunkCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "title", "artist", "album", "tags", "lyrics",
+        "durationMs", "orderIndex", "isDemo", "demoKey", "mimeType", "chunkCount",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "NotepadSheet": {
+      "title": "NotepadSheet",
+      "description": "Saved studio notepad entry: written note, PNG sketch drawing, or voice recording.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["note", "drawing", "recording"] },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "imageBase64": { "type": "string" },
+        "durationMs": { "type": "integer" },
+        "mimeType": { "type": "string" },
+        "chunkCount": { "type": "integer" },
+        "trackId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "type", "title", "content", "imageBase64",
+        "durationMs", "mimeType", "chunkCount", "trackId",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "MediaChunk": {
+      "title": "MediaChunk",
+      "description": "Base64 audio chunk for persisting user-uploaded tracks and voice recordings across devices.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "parentType": { "type": "string", "enum": ["track", "recording"] },
+        "chunkIndex": { "type": "integer" },
+        "totalChunks": { "type": "integer" },
+        "mimeType": { "type": "string" },
+        "dataBase64": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "parentId", "parentType", "chunkIndex",
+        "totalChunks", "mimeType", "dataBase64", "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserSettings" },
+      "description": "User studio settings document scoped to the authenticated user."
+    },
+    "/users/{userId}/tracks/{trackId}": {
+      "schema": { "$ref": "#/entities/Track" },
+      "description": "User playlist tracks and songwriting metadata/lyrics."
+    },
+    "/users/{userId}/sheets/{sheetId}": {
+      "schema": { "$ref": "#/entities/NotepadSheet" },
+      "description": "Saved notepad notes, drawings, and voice recordings."
+    },
+    "/users/{userId}/mediaChunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/MediaChunk" },
+      "description": "Chunked binary audio payloads for uploaded songs and voice recordings."
+    }
+  }
+}
