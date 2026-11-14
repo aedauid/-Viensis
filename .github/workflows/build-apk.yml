@@ -44,7 +44,7 @@ jobs:
 
       - name: Create missing pieces
         run: |
-          keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          [ -f debug.keystore ] || keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           if ! grep -rqs 'name="default_web_client_id"' app/src/main/res; then
             echo '<resources><string name="default_web_client_id">placeholder</string></resources>' > app/src/main/res/values/ph_web_client.xml
           fi
