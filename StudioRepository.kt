@@ -257,7 +257,7 @@ class StudioRepository(context: Context) {
         if (audioBytes != null && audioBytes.isNotEmpty()) {
             onProgress(0.3f)
             // Same path the audio player already looks at, so imported tracks play immediately.
-            writeAtomic(File(audioDir, "$trackId.mp3"), audioBytes)
+            writeAtomic(audioFileFor(trackId, mimeType), audioBytes)
             hasAudio = true
         }
         val now = Timestamp.now()
@@ -318,7 +318,7 @@ class StudioRepository(context: Context) {
 
     suspend fun deleteTrack(trackId: String): Result<Unit> = mutate {
         File(tracksDir, "$trackId.json").delete()
-        File(audioDir, "$trackId.mp3").delete()
+        audioCandidates(trackId).forEach { it.delete() }
         tracksFlow.value = tracksFlow.value.filterNot { it.id == trackId }
         Unit
     }
@@ -389,10 +389,10 @@ class StudioRepository(context: Context) {
     suspend fun downloadMediaChunks(parentId: String): Result<ByteArray> {
         return try {
             val bytes = withContext(Dispatchers.IO) {
-                val audio = File(audioDir, "$parentId.mp3")
+                val audio = audioCandidates(parentId).firstOrNull { it.exists() && it.length() > 0 }
                 val media = File(mediaDir, "$parentId.bin")
                 when {
-                    audio.exists() -> audio.readBytes()
+                    audio != null -> audio.readBytes()
                     media.exists() -> media.readBytes()
                     else -> throw IllegalStateException("Audio file was not found on this phone.")
                 }
@@ -437,6 +437,20 @@ class StudioRepository(context: Context) {
 
     private fun newId(prefix: String): String =
         "${prefix}_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+
+    /** Same extension rule as StudioAudioPlayer.resolveAudioFile, so the player finds the file. */
+    private fun audioExtFor(mimeType: String): String = when {
+        mimeType.contains("wav") -> "wav"
+        mimeType.contains("ogg") -> "ogg"
+        mimeType.contains("mp4") || mimeType.contains("m4a") -> "m4a"
+        else -> "mp3"
+    }
+
+    private fun audioFileFor(trackId: String, mimeType: String): File =
+        File(audioDir, "$trackId.${audioExtFor(mimeType)}")
+
+    private fun audioCandidates(trackId: String): List<File> =
+        listOf("mp3", "wav", "ogg", "m4a").map { File(audioDir, "$trackId.$it") }
 
     private fun writeAtomic(target: File, bytes: ByteArray) {
         target.parentFile?.mkdirs()
