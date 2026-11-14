@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "510946337702",
+    "project_id": "viensis-bea6d",
+    "storage_bucket": "viensis-bea6d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510946337702:android:1e39b3085c9d5b01b92567",
+        "android_client_info": {
+          "package_name": "com.aistudio.ensisvi.krmvxp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByZI72fAOKMcSVZsRT8y9_kqurG9XfnBU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
