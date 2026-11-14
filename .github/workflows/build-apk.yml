@@ -46,7 +46,7 @@ jobs:
         run: |
           [ -f debug.keystore ] || keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           if ! grep -rqs 'name="default_web_client_id"' app/src/main/res; then
-            echo '<resources><string name="default_web_client_id">placeholder</string></resources>' > app/src/main/res/values/ph_web_client.xml
+            echo '<resources><string name="default_web_client_id">510946337702-7l3su25vj5dfia4num77vf4deu474uc7.apps.googleusercontent.com</string></resources>' > app/src/main/res/values/ph_web_client.xml
           fi
           if ! grep -rqs 'name="firestore_database_id"' app/src/main/res; then
             echo '<resources><string name="firestore_database_id">(default)</string></resources>' > app/src/main/res/values/ph_firestore.xml
