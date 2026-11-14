@@ -12,7 +12,20 @@
           "package_name": "com.aistudio.ensisvi.krmvxp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "510946337702-7l3su25vj5dfia4num77vf4deu474uc7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.ensisvi.krmvxp",
+            "certificate_hash": "9c91617c431ff38772af39a7fb159bdeda4617a7"
+          }
+        },
+        {
+          "client_id": "510946337702-ect9vclhq4le5fqm3s32lf53kgsoi5d3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyByZI72fAOKMcSVZsRT8y9_kqurG9XfnBU"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "510946337702-ect9vclhq4le5fqm3s32lf53kgsoi5d3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
